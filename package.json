@@ -4,10 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node build/server.js",
+    "start": "node dist/server.js",
+    "postinstall": "tsc",
     "tsc": "tsc -p tsconfig.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "git add . && git commit -m Heroku && git push heroku master"
   },
+  "engines": { "node": "16.6.1" },
   "keywords": [],
   "author": "",
   "license": "ISC",
