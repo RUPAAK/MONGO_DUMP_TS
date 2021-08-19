@@ -2,10 +2,10 @@
   "name": "database_service_ts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "postinstall": "tsc",
+    "postinstall": "npm run build-ts",
     "tsc": "tsc -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "git add . && git commit -m Heroku && git push heroku master"
