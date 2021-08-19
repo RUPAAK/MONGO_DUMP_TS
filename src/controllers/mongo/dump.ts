@@ -21,6 +21,10 @@ interface Params{
 
 
 const createDump= async(req: Request, res: Response)=>{
+    res.status(200).send({
+        backupId: "id",
+        link: "aws.Location"
+    })
 
     AWS.config.update({
         region: process.env.AWS_S3_API_REGION!,
