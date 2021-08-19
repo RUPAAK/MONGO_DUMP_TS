@@ -14,7 +14,9 @@ app.get('/', (req, res)=>{
     res.send('hi')
     // throw new BadRequestError('NO')
 })
-
+app.get('/api/v1/mongo/dump', (req, res)=>{
+    res.send('dev')
+})
 app.use('/api/v1/mongo', indexMongoRouter)
 
 app.use(errorHandler)
