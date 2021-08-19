@@ -2,23 +2,37 @@
   "name": "database_service_ts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node build/server.js",
+    "start": "node dist/server.js",
+    "postinstall": "npm run build-ts",
     "tsc": "tsc -p tsconfig.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "git add . && git commit -m Heroku && git push heroku master"
   },
+  "engines": { "node": "16.6.1" },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "archiver": "^5.3.0",
+    "aws-sdk": "^2.968.0",
+    "axios": "^0.21.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "mongoose": "^5.13.7"
+    "express-async-errors": "^3.1.1",
+    "extract-zip": "^2.0.1",
+    "mongoose": "^5.13.7",
+    "node-fetch": "^2.6.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/archiver": "^5.1.1",
+    "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
-    "@types/mongoose": "^5.11.97"
+    "@types/mongoose": "^5.11.97",
+    "@types/node-fetch": "^2.5.12",
+    "@types/uuid": "^8.3.1"
   }
 }
