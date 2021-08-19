@@ -1,12 +1,12 @@
 import express from 'express'
-import { errorHandler } from '../../common/middlewares/error-handler';
+import { errorHandler } from '../../common';
 import { createDumpRouter } from './dump'
-import { createRestoreRoute } from './restore';
+import { createRestoreRouter } from './restore';
 
 const router= express.Router()
 
 router.use(createDumpRouter)
-router.use(createRestoreRoute)
+router.use(createRestoreRouter)
 
 router.use(errorHandler);
 

@@ -5,4 +5,4 @@ const router= express.Router()
 
 router.post("/restore", createRestoreHandler)
 
-export {router as createRestoreRoute}
+export {router as createRestoreRouter}
