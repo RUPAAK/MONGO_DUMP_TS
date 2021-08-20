@@ -21,7 +21,6 @@ interface Params{
 
 
 const createDump= async(req: Request, res: Response)=>{
-
     AWS.config.update({
         region: process.env.AWS_S3_API_REGION!,
         accessKeyId: process.env.AWS_S3_ACCESS_KEY!,
