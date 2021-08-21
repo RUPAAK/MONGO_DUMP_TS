@@ -36,9 +36,9 @@ const createDump= async(req: Request, res: Response)=>{
         `--uri`, `${url}/${database}`,
         '--forceTableScan'
     ])
-    // child.stdout.on('data', async (data)=>{ //no data comes
-    //     console.log('stdouts:', "data")
-    // })
+    child.stdout.on('data', async (data)=>{ //no data comes
+        console.log('stdouts:', "data")
+    })
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
         await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=false&isPending=true`, {id, message: Buffer.from(data).toString(), link: ''})
