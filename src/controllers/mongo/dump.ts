@@ -49,8 +49,12 @@ const createDump= async(req: Request, res: Response)=>{
     // })
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
-        if(code) throw new BadRequestError(`Process exit with code: ${code}`)
-        else if(signal)throw new BadRequestError(`Process killed with signal: ${signal}`)
+        if(code){
+            res.send('Process exist')
+        }
+        else if(signal){
+            res.send('Process exists')
+        }
         else{
             console.log('Backup successfull')
 
