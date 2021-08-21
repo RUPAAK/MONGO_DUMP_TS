@@ -49,14 +49,8 @@ const createDump= async(req: Request, res: Response)=>{
     // })
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
-        if(code){
-            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup successfull", link: ''})
-            res.send('hi')
-        }
-        else{
-            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup successfull", link: ''})
-            res.send('hi')
-        }
+        if(code) throw new BadRequestError(`Process exit with code: ${code}`)
+        else if(signal)throw new BadRequestError(`Process killed with signal: ${signal}`)
         else{
             console.log('Backup successfull')
 
