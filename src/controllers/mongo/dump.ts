@@ -54,7 +54,7 @@ const createDump= async(req: Request, res: Response)=>{
             res.end()
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Bad Url", link: ''})
+            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup Failed", link: ''})
             res.end()
         }
         else{
