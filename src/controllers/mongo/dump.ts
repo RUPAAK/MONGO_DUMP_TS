@@ -44,9 +44,9 @@ const createDump= async(req: Request, res: Response)=>{
         await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=false&isPending=true`, {id, message: Buffer.from(data).toString(), link: ''})
     })
 
-    // child.on('error',(error: Error)=>{ //if command is not found
-    //     res.send('hi')
-    // })
+    child.on('error',(error: Error)=>{ //if command is not found
+        res.send(error)
+    })
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
