@@ -4,9 +4,10 @@ import fs from 'fs'
 import path from 'path'
 import fetch from 'node-fetch'
 import extract from 'extract-zip'
+import axios from 'axios'
 
 const createRestore= async(req: Request, res: Response)=>{
-    const {url, database }= req.body
+    const {baseUrl, url, database }= req.body
 
     const response= await fetch(url)
     const bufferData: Buffer= await response.buffer()
