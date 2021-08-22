@@ -28,17 +28,17 @@ const createRestore= async(req: Request, res: Response)=>{
 
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger?state=restore_pending`, {id, message: "Restore Pending", data: ''})
+        await axios.post(`${baseUrl}/logger?state=restore_pending`, {message: "Restore Pending", data: ''})
     })
 
     // child.on('error',(error)=> console.log('error', error))
 
     child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger?state=restore_failed`, {id, message: "Restore Failed", data: ''})
+            await axios.post(`${baseUrl}/logger?state=restore_failed`, {message: "Restore Failed", data: ''})
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger?state=restore_failed`, {id, message: "Restore Failed", data: ''})
+            await axios.post(`${baseUrl}/logger?state=restore_failed`, {message: "Restore Failed", data: ''})
         }
         else{
             fs.rm('dump', {recursive: true}, ()=>{
@@ -46,7 +46,7 @@ const createRestore= async(req: Request, res: Response)=>{
                     console.log('Removed')
                 })
             })
-            await axios.post(`${baseUrl}/logger?state=restore_success`, {id, message: "Restore successfull", data: ''})
+            await axios.post(`${baseUrl}/logger?state=restore_success`, {message: "Restore successfull", data: ''})
             res.end()
             // res.send({
             //     data: "Restore Sucessfull"
