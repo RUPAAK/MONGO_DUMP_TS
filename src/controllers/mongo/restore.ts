@@ -25,14 +25,14 @@ const createRestore= async(req: Request, res: Response)=>{
     //     console.log('stdout:', data)
     // })
 
-    child.stderr.on('data', (data)=>{
+    child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
         await axios.post(`${baseUrl}/logger?state=restore_pending`, {id, message: "Restore Pending", data: ''})
     })
 
     // child.on('error',(error)=> console.log('error', error))
 
-    child.on('exit', (code: number, signal: NodeJS.Signals)=>{
+    child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
         if(code){
             await axios.post(`${baseUrl}/logger?state=restore_failed`, {id, message: "Restore Failed", data: ''})
         }
