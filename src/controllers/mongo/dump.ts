@@ -100,10 +100,11 @@ const createDump= async(req: Request, res: Response)=>{
                             await axios.post(`${baseUrl}/logger?state=success`, {id, message: "Backup successfull", data: aws.Location})
                         fs.rm('dump', {recursive: true}, ()=>{
                             fs.rm('restore', {recursive: true}, ()=>{
-                                res.status(200).send({
-                                    backupId: id,
-                                    link: aws.Location
-                                })
+                                res.end()
+                                // res.status(200).send({
+                                //     backupId: id,
+                                //     link: aws.Location
+                                // })
                             })
                         })
                         }

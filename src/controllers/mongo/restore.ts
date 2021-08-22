@@ -21,28 +21,35 @@ const createRestore= async(req: Request, res: Response)=>{
         '--uri', database,
         '--drop'
     ])
-    child.stdout.on('data', (data)=>{
-        console.log('stdout:', data)
-    })
+    // child.stdout.on('data', (data)=>{
+    //     console.log('stdout:', data)
+    // })
 
     child.stderr.on('data', (data)=>{
         console.log('stdout:', Buffer.from(data).toString())
+        await axios.post(`${baseUrl}/logger?state=restore_pending`, {id, message: "Restore Pending", data: ''})
     })
 
-    child.on('error',(error)=> console.log('error', error))
+    // child.on('error',(error)=> console.log('error', error))
 
     child.on('exit', (code: number, signal: NodeJS.Signals)=>{
-        if(code) console.log('Process exit with code: ', code)
-        else if(signal) console.log('Prcess killed with signal: ', signal)
+        if(code){
+            await axios.post(`${baseUrl}/logger?state=restore_failed`, {id, message: "Restore Failed", data: ''})
+        }
+        else if(signal){
+            await axios.post(`${baseUrl}/logger?state=restore_failed`, {id, message: "Restore Failed", data: ''})
+        }
         else{
             fs.rm('dump', {recursive: true}, ()=>{
                 fs.unlink('zipfile.zip', ()=>{
                     console.log('Removed')
                 })
             })
-            res.send({
-                data: "sucessfull"
-            })
+            await axios.post(`${baseUrl}/logger?state=restore_success`, {id, message: "Restore successfull", data: ''})
+            res.end()
+            // res.send({
+            //     data: "Restore Sucessfull"
+            // })
         }
     })
 }
