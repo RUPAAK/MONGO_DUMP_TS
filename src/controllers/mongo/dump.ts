@@ -99,6 +99,7 @@ const createDump= async(req: Request, res: Response)=>{
                     }
                     s3.upload(params, async function(s3Err: Error, aws: any){
                         if(s3Err){
+                            await axios.post(`${baseUrl}/logger`, {id, message: "AWS Failed", data: '', state: State.Failed})
                             res.json({
                                 message: s3Err.message
                             })
