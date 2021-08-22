@@ -41,7 +41,7 @@ const createDump= async(req: Request, res: Response)=>{
     // })
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger?state=pending`, {id, message: Buffer.from(data).toString(), data: ''})
+        await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: 'pending'})
     })
 
     // child.on('error',(error: Error)=>{ //if command is not found
@@ -50,17 +50,17 @@ const createDump= async(req: Request, res: Response)=>{
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger?state=failed`, {id, message: "Backup Failed", data: ''})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: 'Failed'})
             res.end()
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger?state=failed`, {id, message: "Backup Stoped", data: ''})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: 'Failed'})
             res.end()
         }
         else{
             console.log('Backup successfull')
 
-            await axios.post(`${baseUrl}/logger?state=success&pending`, {id, message: "Backup successfull", data: ''})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'Pending'})
             if(!fs.existsSync('restore')){
                 fs.mkdirSync('restore')
             }
@@ -97,7 +97,7 @@ const createDump= async(req: Request, res: Response)=>{
                             })
                         }
                         if(aws){
-                            await axios.post(`${baseUrl}/logger?state=success`, {id, message: "Backup successfull", data: aws.Location})
+                            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: 'Success'})
                         fs.rm('dump', {recursive: true}, ()=>{
                             fs.rm('restore', {recursive: true}, ()=>{
                                 res.end()
