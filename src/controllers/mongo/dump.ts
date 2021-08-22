@@ -41,7 +41,7 @@ const createDump= async(req: Request, res: Response)=>{
     // })
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=false&isPending=true`, {id, message: Buffer.from(data).toString(), link: ''})
+        await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=false&isPending=true`, {id, message: Buffer.from(data).toString(), data: ''})
     })
 
     // child.on('error',(error: Error)=>{ //if command is not found
@@ -50,17 +50,17 @@ const createDump= async(req: Request, res: Response)=>{
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup Failed", link: ''})
+            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup Failed", data: ''})
             res.end()
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup Stoped", link: ''})
+            await axios.post(`${baseUrl}/logger?isSuccessfull=false&isFailed=true&isPending=false`, {id, message: "Backup Stoped", data: ''})
             res.end()
         }
         else{
             console.log('Backup successfull')
 
-            await axios.post(`${baseUrl}/logger?isSuccessfull=true&isFailed=false&isPending=true`, {id, message: "Backup successfull", link: ''})
+            await axios.post(`${baseUrl}/logger?isSuccessfull=true&isFailed=false&isPending=true`, {id, message: "Backup successfull", data: ''})
             if(!fs.existsSync('restore')){
                 fs.mkdirSync('restore')
             }
@@ -97,7 +97,7 @@ const createDump= async(req: Request, res: Response)=>{
                             })
                         }
                         if(aws){
-                            await axios.post(`${baseUrl}/logger?isSuccessfull=true&isFailed=false&isPending=false`, {id, message: "Backup successfull", link: aws.Location})
+                            await axios.post(`${baseUrl}/logger?isSuccessfull=true&isFailed=false&isPending=false`, {id, message: "Backup successfull", data: aws.Location})
                         fs.rm('dump', {recursive: true}, ()=>{
                             fs.rm('restore', {recursive: true}, ()=>{
                                 res.status(200).send({
