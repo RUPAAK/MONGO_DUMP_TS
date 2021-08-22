@@ -60,7 +60,7 @@ const createDump= async(req: Request, res: Response)=>{
         else{
             console.log('Backup successfull')
 
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'Pending'})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'success&pending'})
             if(!fs.existsSync('restore')){
                 fs.mkdirSync('restore')
             }
