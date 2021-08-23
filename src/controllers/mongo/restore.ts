@@ -14,13 +14,13 @@ enum State{
 
 const createRestore= async(req: Request, res: Response)=>{
     const {baseUrl, url, database }= req.body
-
+    
     const response= await fetch(url)
     const bufferData: Buffer= await response.buffer()
 
     fs.writeFile('zipfile.zip', bufferData, ()=>{
-        fs.mkdir('dump', async()=>{
-            await extract('zipfile.zip', {dir: path.resolve('dump')})
+        fs.mkdir('dump', ()=>{
+             extract('zipfile.zip', {dir: path.resolve('dump')})
         })
     })
     const child= spawn('mongorestore', [
