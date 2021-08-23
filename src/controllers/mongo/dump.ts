@@ -18,12 +18,6 @@ interface Params{
     Key: string;
     Body: Buffer
 }
-enum State{
-    Failed= "failed",
-    Pending= "pending",
-    SuccessPending= "success&pending",
-    Success= "success"
-}
 
 
 const createDump= async(req: Request, res: Response)=>{
@@ -39,7 +33,7 @@ const createDump= async(req: Request, res: Response)=>{
     const {baseUrl, id, url, database}= req.body
     const child= spawn('mongodump', [
         '--gzip',
-        `--uri`, `${url}/${database}`,
+        `--uri`, `${url}`,
         '--forceTableScan'
     ])
     // child.stdout.on('data', async (data)=>{ //no data comes
@@ -47,7 +41,7 @@ const createDump= async(req: Request, res: Response)=>{
     // })
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
+        await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: 'pending'})
     })
 
     // child.on('error',(error: Error)=>{ //if command is not found
@@ -56,18 +50,17 @@ const createDump= async(req: Request, res: Response)=>{
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: State.Failed})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: 'Failed'})
             res.end()
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: State.Failed})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: 'Failed'})
             res.end()
         }
         else{
             console.log('Backup successfull')
-            try {
-                
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: State.SuccessPending})
+
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'success&pending'})
             if(!fs.existsSync('restore')){
                 fs.mkdirSync('restore')
             }
@@ -99,13 +92,12 @@ const createDump= async(req: Request, res: Response)=>{
                     }
                     s3.upload(params, async function(s3Err: Error, aws: any){
                         if(s3Err){
-                            await axios.post(`${baseUrl}/logger`, {id, message: "AWS Failed", data: '', state: State.Failed})
                             res.json({
                                 message: s3Err.message
                             })
                         }
                         if(aws){
-                            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
+                            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: 'success'})
                         fs.rm('dump', {recursive: true}, ()=>{
                             fs.rm('restore', {recursive: true}, ()=>{
                                 res.end()
@@ -119,11 +111,6 @@ const createDump= async(req: Request, res: Response)=>{
                     })
                 }
             })
-            } catch (error) {
-                res.send({
-                    data: error.message
-                })
-            }
 
         }
     })
