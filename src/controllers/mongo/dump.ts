@@ -95,7 +95,7 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                         s3.upload(params, async function(s3Err: Error, aws: any){
                             if(s3Err){
-                                await axios.post(`${baseUrl}/logger`, {id, message: "Link Creation Failed", data: '', state: 'failed'})
+                                await axios.post(`${baseUrl}/logger`, {id, message: `${s3Err.message}`, data: '', state: 'failed'})
                                 res.end()
                             }
                             if(aws){
@@ -110,7 +110,6 @@ const createDump= async(req: Request, res: Response)=>{
                     }
                 })
             } catch (e) {
-                console.log(e.message)
                 await axios.post(`${baseUrl}/logger`, {id, message: `${e.message}`, data: '', state: 'failed'})
             }
 
