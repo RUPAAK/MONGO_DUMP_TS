@@ -9,7 +9,7 @@ import axios from 'axios'
 
 
 import { BadRequestError } from '../../common'
-import { ProcessFailedError } from '../../common/errors/process-failed-error'
+import { ProcessfailedError } from '../../common/errors/process-failed-error'
 
 
 
@@ -50,11 +50,11 @@ const createDump= async(req: Request, res: Response)=>{
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: 'Failed'})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: 'failed'})
             res.end()
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: 'Failed'})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: 'failed'})
             res.end()
         }
         else{
@@ -110,7 +110,7 @@ const createDump= async(req: Request, res: Response)=>{
                 })
             } catch (e) {
                 console.log(e.message)
-                await axios.post(`${baseUrl}/logger`, {id, message: `Link Creation Failed: ${e.message}`, data: '', state: 'Failed'})
+                await axios.post(`${baseUrl}/logger`, {id, message: `Link Creation Failed: ${e.message}`, data: '', state: 'failed'})
             }
 
         }
