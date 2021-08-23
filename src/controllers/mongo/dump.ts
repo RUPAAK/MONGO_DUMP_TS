@@ -18,7 +18,12 @@ interface Params{
     Key: string;
     Body: Buffer
 }
-
+enum State{
+    Failed= "failed",
+    Success= "success",
+    Success_Pending= "success&pending",
+    Pending= "pending"
+}
 
 const createDump= async(req: Request, res: Response)=>{
     AWS.config.update({
@@ -41,7 +46,7 @@ const createDump= async(req: Request, res: Response)=>{
     // })
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: 'pending'})
+        await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
     })
 
     // child.on('error',(error: Error)=>{ //if command is not found
@@ -50,18 +55,16 @@ const createDump= async(req: Request, res: Response)=>{
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: 'failed'})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: State.Failed})
             res.end()
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: 'failed'})
+            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: State.Failed})
             res.end()
         }
         else{
-            console.log('Backup successfull')
-
             try {
-                await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'success&pending'})
+                await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: State.Success_Pending})
                 if(!fs.existsSync('restore')){
                     fs.mkdirSync('restore')
                 }
@@ -82,9 +85,10 @@ const createDump= async(req: Request, res: Response)=>{
                 await archive.finalize()
     
                 const zipPath= path.resolve('./restore/dump.zip')
-                const zipFile= fs.readFile(zipPath, (err: any, data: Buffer)=>{
+                const zipFile= fs.readFile(zipPath, async(err: any, data: Buffer)=>{
                     if(err){
-                        throw new Error(err.message)
+                        await axios.post(`${baseUrl}/logger`, {id, message: err.message, data: '', state: State.Failed})
+                        res.end()
                     }
                     if(data){
                         
@@ -95,11 +99,11 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                         s3.upload(params, async function(s3Err: Error, aws: any){
                             if(s3Err){
-                                await axios.post(`${baseUrl}/logger`, {id, message: `${s3Err.message}`, data: '', state: 'failed'})
+                                await axios.post(`${baseUrl}/logger`, {id, message: `${s3Err.message}`, data: '', state: State.Failed})
                                 res.end()
                             }
                             if(aws){
-                                await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: 'success'})
+                                await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
                             fs.rm('dump', {recursive: true}, ()=>{
                                 fs.rm('restore', {recursive: true}, ()=>{
                                     res.end()
@@ -110,7 +114,8 @@ const createDump= async(req: Request, res: Response)=>{
                     }
                 })
             } catch (e) {
-                await axios.post(`${baseUrl}/logger`, {id, message: `${e.message}`, data: '', state: 'failed'})
+                await axios.post(`${baseUrl}/logger`, {id, message: e.message, data: '', state: State.Failed})
+                res.end()
             }
 
         }
