@@ -4,6 +4,6 @@ import { createDumpHandler } from '../../controllers/mongo/dump'
 
 const router= express.Router()
 
-router.post('/dump', isValid, createDumpHandler)
+router.post('/dump', createDumpHandler)
 
 export {router as createDumpRouter}
