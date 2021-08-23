@@ -60,57 +60,57 @@ const createDump= async(req: Request, res: Response)=>{
         else{
             console.log('Backup successfull')
 
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'success&pending'})
-            if(!fs.existsSync('restore')){
-                fs.mkdirSync('restore')
-            }
-            const output = await fs.createWriteStream('restore/dump.zip');
-            const archive = archiver('zip', {
-                zlib: {level: 9}
-            }); 
-
-            archive.on('error', function(err: Error){
-                throw new BadRequestError('Failed to create Zip folder')
-            });
-            
-            await archive.pipe(output);
-            
-            // append files from a sub-directory, putting its contents at the root of archive
-            await archive.directory('./dump', false);
-
-            await archive.finalize()
-
-            const zipPath= path.resolve('./restore/dump.zip')
-            const zipFile= fs.readFile(zipPath, (err: any, data: Buffer)=>{
-                if(err) throw new BadRequestError('Dump\'s zipfile not created')
-                if(data){
-                    
-                    const params: Params={
-                        Bucket: process.env.AWS_S3_BUCKET_NAME!,
-                        Key: `${uuidv4()}${path.extname(zipPath)}`,
-                        Body: data
-                    }
-                    s3.upload(params, async function(s3Err: Error, aws: any){
-                        if(s3Err){
-                            res.json({
-                                message: s3Err.message
-                            })
-                        }
-                        if(aws){
-                            await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: 'success'})
-                        fs.rm('dump', {recursive: true}, ()=>{
-                            fs.rm('restore', {recursive: true}, ()=>{
-                                res.end()
-                                // res.status(200).send({
-                                //     backupId: id,
-                                //     link: aws.Location
-                                // })
-                            })
-                        })
-                        }
-                    })
+            try {
+                await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: '', state: 'success&pending'})
+                if(!fs.existsSync('restore')){
+                    fs.mkdirSync('restore')
                 }
-            })
+                const output = await fs.createWriteStream('restore/dump.zip');
+                const archive = archiver('zip', {
+                    zlib: {level: 9}
+                }); 
+    
+                archive.on('error', function(err: Error){
+                    throw new BadRequestError('Failed to create Zip folder')
+                });
+                
+                await archive.pipe(output);
+                
+                // append files from a sub-directory, putting its contents at the root of archive
+                await archive.directory('./dump', false);
+    
+                await archive.finalize()
+    
+                const zipPath= path.resolve('./restore/dump.zip')
+                const zipFile= fs.readFile(zipPath, (err: any, data: Buffer)=>{
+                    if(err) throw new BadRequestError('Dump\'s zipfile not created')
+                    if(data){
+                        
+                        const params: Params={
+                            Bucket: process.env.AWS_S3_BUCKET_NAME!,
+                            Key: `${uuidv4()}${path.extname(zipPath)}`,
+                            Body: data
+                        }
+                        s3.upload(params, async function(s3Err: Error, aws: any){
+                            if(s3Err){
+                                res.json({
+                                    message: s3Err.message
+                                })
+                            }
+                            if(aws){
+                                await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: 'success'})
+                            fs.rm('dump', {recursive: true}, ()=>{
+                                fs.rm('restore', {recursive: true}, ()=>{
+                                    res.end()
+                                })
+                            })
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                await axios.post(`${baseUrl}/logger`, {id, message: `Link Creation Failed: ${e.message}`, data: '', state: 'Failed'})
+            }
 
         }
     })
