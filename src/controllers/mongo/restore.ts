@@ -14,55 +14,60 @@ enum State{
 
 const createRestore= async(req: Request, res: Response)=>{
     const {baseUrl, url, database }= req.body
+    try {
+        const response= await fetch(url)
+        const bufferData: Buffer= await response.buffer()
     
-    const response= await fetch(url)
-    const bufferData: Buffer= await response.buffer()
-
-    fs.writeFile('zipfile.zip', bufferData, ()=>{
-        fs.mkdir('dump', async()=>{
-            await extract('zipfile.zip', {dir: path.resolve('dump')})
-        })
-    })
-    const child= spawn('mongorestore', [
-        '--gzip',
-        '--uri', database,
-        '--drop'
-    ])
-
-    // child.stdout.on('data', (data)=>{
-    //     console.log('stdout:', data)
-    // })
-
-    child.stderr.on('data', async(data)=>{
-        console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
-    })
-
-    // child.on('error',(error)=> console.log('error', error))
-
-    child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
-        if(code){
-            await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
-            res.end()
-        }
-        else if(signal){
-            await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
-            res.end()
-        }
-        else{
-            fs.rm('dump', {recursive: true}, ()=>{
-                fs.unlink('zipfile.zip', ()=>{
-                    console.log('Removed')
-                })
+        fs.writeFile('zipfile.zip', bufferData, ()=>{
+            fs.mkdir('dump', async()=>{
+                await extract('zipfile.zip', {dir: path.resolve('dump')})
             })
-            await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
-            res.end()
+        })
+        const child= spawn('mongorestore', [
+            '--gzip',
+            '--uri', database,
+            '--drop'
+        ])
+    
+        // child.stdout.on('data', (data)=>{
+        //     console.log('stdout:', data)
+        // })
+    
+        child.stderr.on('data', async(data)=>{
+            console.log('stdout:', Buffer.from(data).toString())
+            await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
+        })
+    
+        // child.on('error',(error)=> console.log('error', error))
+    
+        child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
+            if(code){
+                await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
+                res.end()
+            }
+            else if(signal){
+                await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
+                res.end()
+            }
+            else{
+                fs.rm('dump', {recursive: true}, ()=>{
+                    fs.unlink('zipfile.zip', ()=>{
+                        console.log('Restore Successfull')
+                    })
+                })
+                await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
+                res.end()
+    
+                // res.send({
+                //     data: "Restore Sucessfull"
+                // })
+            }
+        })
+    } catch (error) {
+        await axios.post(`${baseUrl}/logger`, {message: error.message, data: '', state: State.Restore_Failed})
+        res.end()
+    }
 
-            // res.send({
-            //     data: "Restore Sucessfull"
-            // })
-        }
-    })
 }
 
 export {createRestore as createRestoreHandler}
