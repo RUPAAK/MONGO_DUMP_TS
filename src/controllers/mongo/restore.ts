@@ -7,7 +7,7 @@ import extract from 'extract-zip'
 import axios from 'axios'
 
 enum State{
-    Restore_Pending= "restore$pending",
+    Restore_Pending= "restore&pending",
     Restore_Failed= "restore&failed",
     Restore_Success= "restore&success"
 }
