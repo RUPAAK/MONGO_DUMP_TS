@@ -35,32 +35,34 @@ const createDump= async(req: Request, res: Response)=>{
 
     const s3= new AWS.S3()
 
-    const {baseUrl, id, url, database}= req.body
+    const {baseUrl, id, url}= req.body
     const child= spawn('mongodump', [
         '--gzip',
         `--uri`, `${url}`,
         '--forceTableScan'
     ])
-    // child.stdout.on('data', async (data)=>{ //no data comes
-    //     console.log('stdouts:', "data")
-    // })
+
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
         await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
     })
 
-    // child.on('error',(error: Error)=>{ //if command is not found
-    //     res.send(error)
-    // })
-
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: State.Failed})
-            res.end()
+            try {
+                await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: State.Failed})
+                res.end()
+            } catch (error) {
+                await axios.post(`${baseUrl}/logger`, {id, message: error.message, data: '', state: State.Failed})
+            }
         }
         else if(signal){
-            await axios.post(`${baseUrl}/logger`, {id, message: "Backup Stoped", data: '', state: State.Failed})
-            res.end()
+            try {
+                await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: State.Failed})
+                res.end()
+            } catch (error) {
+                await axios.post(`${baseUrl}/logger`, {id, message: error.message, data: '', state: State.Failed})
+            }
         }
         else{
             try {
