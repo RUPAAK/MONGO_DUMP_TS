@@ -18,7 +18,7 @@ interface Params{
     Key: string;
     Body: Buffer
 }
-enum State{
+export enum State{
     Failed= "failed",
     Success= "success",
     Success_Pending= "success&pending",
