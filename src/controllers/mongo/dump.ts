@@ -55,7 +55,7 @@ const createDump= async(req: Request, res: Response)=>{
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
         if(code){
             try {
-                await axios.post(`${baseUrl}/logger`, {id, message: "Backup Failed", data: '', state: State.Failed})
+                await axios.post(`${baseUrl}/logger`, {id, message: "Backup Faileds", data: '', state: State.Failed})
                 res.end()
             } catch (error) {
                 await axios.post(`${baseUrl}/logger`, {id, message: error.message, data: '', state: State.Failed})
