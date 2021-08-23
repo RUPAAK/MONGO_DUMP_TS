@@ -29,9 +29,8 @@ export const isValid = async (
   const jwtToken = req.headers.authorization.split(" ")[1];
 
   try {
-    const payload = jwt.verify(
-      jwtToken,
-      process.env.JWT_KEY!
+    const payload = jwt.decode(
+      jwtToken
     ) as unknown as Valid;
 
     if(payload.isValid){
