@@ -51,7 +51,7 @@ const createRestore= async(req: Request, res: Response)=>{
         }
         else{
             fs.rm('dump', {recursive: true}, ()=>{
-                fs.unlink('zipfile.zip', ()=>{
+                fs.unlink('zipfile.zip', async()=>{
                     await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
                     res.end()
                 })
