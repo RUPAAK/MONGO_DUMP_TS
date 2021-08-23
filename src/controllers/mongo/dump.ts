@@ -50,6 +50,7 @@ const createDump= async(req: Request, res: Response)=>{
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
         await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
+        res.end()
     })
 
     child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
