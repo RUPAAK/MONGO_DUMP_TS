@@ -13,14 +13,15 @@ enum State{
 }
 
 const createRestore= async(req: Request, res: Response)=>{
+    console.log('his')
     const {baseUrl, url, database }= req.body
     
     const response= await fetch(url)
     const bufferData: Buffer= await response.buffer()
 
     fs.writeFile('zipfile.zip', bufferData, ()=>{
-        fs.mkdir('dump', ()=>{
-             extract('zipfile.zip', {dir: path.resolve('dump')})
+        fs.mkdir('dump', async()=>{
+            await extract('zipfile.zip', {dir: path.resolve('dump')})
         })
     })
     const child= spawn('mongorestore', [
@@ -35,7 +36,7 @@ const createRestore= async(req: Request, res: Response)=>{
 
     child.stderr.on('data', async(data)=>{
         console.log('stdout:', Buffer.from(data).toString())
-        await axios.post(`${baseUrl}/logger`, {message: "Restore Pending", data: '', state:State.Restore_Pending})
+        await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
     })
 
     // child.on('error',(error)=> console.log('error', error))
@@ -51,11 +52,12 @@ const createRestore= async(req: Request, res: Response)=>{
         }
         else{
             fs.rm('dump', {recursive: true}, ()=>{
-                fs.unlink('zipfile.zip', async()=>{
-                    await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
-                    res.end()
+                fs.unlink('zipfile.zip', ()=>{
+                    console.log('Removed')
                 })
             })
+            await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
+            res.end()
 
             // res.send({
             //     data: "Restore Sucessfull"
