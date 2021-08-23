@@ -13,7 +13,6 @@ enum State{
 }
 
 const createRestore= async(req: Request, res: Response)=>{
-    console.log('his')
     const {baseUrl, url, database }= req.body
     
     const response= await fetch(url)
