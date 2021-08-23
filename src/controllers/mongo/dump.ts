@@ -37,6 +37,7 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!baseUrl && !id && !url){
+        console.log('hi')
         res.end()
     }
     const child= spawn('mongodump', [
