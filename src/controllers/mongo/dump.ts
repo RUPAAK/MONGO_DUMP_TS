@@ -84,7 +84,7 @@ const createDump= async(req: Request, res: Response)=>{
                 const zipPath= path.resolve('./restore/dump.zip')
                 const zipFile= fs.readFile(zipPath, (err: any, data: Buffer)=>{
                     if(err){
-                        throw new Error(err)
+                        throw new Error(err.message)
                     }
                     if(data){
                         
@@ -95,7 +95,7 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                         s3.upload(params, async function(s3Err: Error, aws: any){
                             if(s3Err){
-                                throw new Error(s3Err)
+                                throw new Error(s3Err.message)
                             }
                             if(aws){
                                 await axios.post(`${baseUrl}/logger`, {id, message: "Backup successfull", data: aws.Location, state: 'success'})
