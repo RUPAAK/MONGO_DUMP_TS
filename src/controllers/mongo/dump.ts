@@ -108,7 +108,7 @@ const createDump= async(req: Request, res: Response)=>{
                         })
                     }
                 })
-            } catch (error) {
+            } catch (e) {
                 await axios.post(`${baseUrl}/logger`, {id, message: `Link Creation Failed: ${e.message}`, data: '', state: 'Failed'})
             }
 
