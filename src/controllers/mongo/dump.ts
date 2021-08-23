@@ -37,8 +37,6 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!baseUrl && !id && !url){
-        console.log('hi')
-        await axios.post(`${baseUrl}/logger`, {id, message: 'Empty Field', data: '', state: State.Failed})
         res.end()
     }
     const child= spawn('mongodump', [
