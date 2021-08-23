@@ -48,13 +48,13 @@ const createDump= async(req: Request, res: Response)=>{
         ])
     
         child.stderr.on('data', async(data)=>{
-            try {
+            // try {
                 console.log('stdout:', Buffer.from(data).toString())
                 await axios.post(`${baseUrl}/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
                 res.end()
-            } catch (error) {
-                await axios.post(`${baseUrl}/logger`, {id, message:  error.message, data: '', state: State.Failed})
-            }
+            // } catch (error) {
+            //     await axios.post(`${baseUrl}/logger`, {id, message:  error.message, data: '', state: State.Failed})
+            // }
         })
     
         child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
