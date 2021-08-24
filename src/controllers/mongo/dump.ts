@@ -37,8 +37,8 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
-        // errorFunction(baseUrl, "Empty Field", id, '', State.Failed)
-        await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Empty Field", data: '', state: State.Failed})
+        errorFunction(baseUrl, "Empty Field", id, '', State.Failed)
+        // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Empty Field", data: '', state: State.Failed})
         res.end()
     }else{
         const child= spawn('mongodump', [
