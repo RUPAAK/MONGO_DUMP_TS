@@ -6,7 +6,7 @@ import archiver from 'archiver'
 import { v4 as uuidv4 } from 'uuid';
 import AWS from 'aws-sdk'
 import axios from 'axios'
-import { errorFunction } from '../../common/errors/errorFunction'
+import { loggerFunction } from '../../common/errors/errorFunction'
 
 
 // import { ProcessfailedError } from '../../common/errors/process-failed-error'
@@ -37,7 +37,7 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
-        errorFunction(baseUrl, "Empty Field", id, '', State.Failed)
+        loggerFunction(baseUrl, "Empty Field", id, '', State.Failed)
         // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Empty Field", data: '', state: State.Failed})
         res.end()
     }else{
@@ -50,35 +50,40 @@ const createDump= async(req: Request, res: Response)=>{
         child.stderr.on('data', async(data)=>{
             try {
                 console.log('stdout:', Buffer.from(data).toString())
-                await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
+                loggerFunction(baseUrl, Buffer.from(data).toString(), id, '', State.Pending)
+                // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
                 res.end()
             } catch (error) {
-                await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message:  error.message, data: '', state: State.Failed})
+                loggerFunction(baseUrl, error.message, id, '', State.Failed)
+                res.end()
+                // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message:  error.message, data: '', state: State.Failed})
             }
         })
     
         child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
             if(code){
                 try {
-                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `Backup Failed with code: ${code}`, data: '', state: State.Failed})
+                    loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
+                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `Backup Failed with code: ${code}`, data: '', state: State.Failed})
                 } catch (error) {
-                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: error.message, data: '', state: State.Failed})
+                    loggerFunction(baseUrl, error.message, id, '', State.Failed)
                     res.end()
                 }
             }
             else if(signal){
                 try {
-                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `Backup Failed with signal: ${signal}`, data: '', state: State.Failed})
+                    loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: error.message, data: '', state: State.Failed})
+                    loggerFunction(baseUrl, error.message, id, '', State.Failed)
                     res.end()
                 }
             }
             else{
                 try {
-                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: '', state: State.Success_Pending})
+                    loggerFunction(baseUrl, "Backup SuccessFull", id, '', State.Success_Pending)
+                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: '', state: State.Success_Pending})
                     if(!fs.existsSync('restore')){
                         fs.mkdirSync('restore')
                     }
@@ -114,11 +119,13 @@ const createDump= async(req: Request, res: Response)=>{
                             }
                             s3.upload(params, async function(s3Err: Error, aws: any){
                                 if(s3Err){
-                                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `${s3Err.message}`, data: '', state: State.Failed})
+                                    loggerFunction(baseUrl, s3Err.message, id, '', State.Failed)
+                                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `${s3Err.message}`, data: '', state: State.Failed})
                                     res.end()
                                 }
                                 if(aws){
-                                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
+                                    loggerFunction(baseUrl, "Backup completer. AWS link genereted", id, aws.location, State.Success)
+                                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
                                         console.log('Removed Folders')
@@ -130,7 +137,8 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                     })
                 } catch (e) {
-                    await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: e.message, data: '', state: State.Failed})
+                    loggerFunction(baseUrl, e.message, id, '', State.Failed)
+                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: e.message, data: '', state: State.Failed})
                     res.end()
                 }
     
