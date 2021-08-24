@@ -6,7 +6,7 @@ import archiver from 'archiver'
 import { v4 as uuidv4 } from 'uuid';
 import AWS from 'aws-sdk'
 import axios from 'axios'
-import { loggerFunction } from '../../common/errors/errorFunction'
+import { loggerFunction } from '../../common/errors/loggerFunction'
 
 
 // import { ProcessfailedError } from '../../common/errors/process-failed-error'
@@ -37,7 +37,8 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
-        loggerFunction(baseUrl, "Empty Field", id, '', State.Failed)
+        loggerFunction("Empty Field", State.Failed, id, baseUrl)
+        // loggerFunction(baseUrl, "Empty Field", id, '', State.Failed)
         res.end()
     }else{
         const child= spawn('mongodump', [
@@ -49,10 +50,10 @@ const createDump= async(req: Request, res: Response)=>{
         child.stderr.on('data', async(data)=>{
             try {
                 console.log('stdout:', Buffer.from(data).toString())
-                loggerFunction(baseUrl, Buffer.from(data).toString(), id, '', State.Pending)
+                loggerFunction(Buffer.from(data).toString(), State.Pending, id, baseUrl)
                 res.end()
             } catch (error) {
-                loggerFunction(baseUrl, error.message, id, '', State.Failed)
+                loggerFunction(error.message, State.Failed, id, baseUrl)
                 res.end()
             }
         })
@@ -60,25 +61,30 @@ const createDump= async(req: Request, res: Response)=>{
         child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
             if(code){
                 try {
-                    loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
+                    loggerFunction(`Backup Failed with code: ${code}`, State.Failed, id, baseUrl )
+                    // loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    loggerFunction(baseUrl, error.message, id, '', State.Failed)
+                    loggerFunction(error.message, State.Failed, id, baseUrl)
+                    // loggerFunction(baseUrl, error.message, ?id, '', State.Failed)
                     res.end()
                 }
             }
             else if(signal){
                 try {
-                    loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
+                    loggerFunction(`Backup Failed with signal: ${signal}`, State.Failed, id, baseUrl)
+                    // loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    loggerFunction(baseUrl, error.message, id, '', State.Failed)
+                    loggerFunction(error.message, State.Failed, id, baseUrl)
+                    // loggerFunction(baseUrl, error.message, id, '', State.Failed)
                     res.end()
                 }
             }
             else{
                 try {
-                    loggerFunction(baseUrl, "Backup SuccessFull", id, '', State.Success_Pending)
+                    loggerFunction("Backup SuccessFull", State.Success_Pending, id, baseUrl)
+                    // loggerFunction(baseUrl, "Backup SuccessFull", id, '', State.Success_Pending)
                     if(!fs.existsSync('restore')){
                         fs.mkdirSync('restore')
                     }
@@ -88,7 +94,8 @@ const createDump= async(req: Request, res: Response)=>{
                     }); 
         
                     archive.on('error', function(err: Error){
-                        loggerFunction(baseUrl, err.message, id, '', State.Failed)
+                        loggerFunction(err.message, State.Failed, id, baseUrl)
+                        // loggerFunction(baseUrl, err.message, id, '', State.Failed)
                         res.end()
                     });
                     
@@ -102,7 +109,8 @@ const createDump= async(req: Request, res: Response)=>{
                     const zipPath= path.resolve('./restore/dump.zip')
                     const zipFile= fs.readFile(zipPath, async(err: any, data: Buffer)=>{
                         if(err){
-                            await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: err.message, data: '', state: State.Failed})
+                            loggerFunction(err.message, State.Failed, id, baseUrl)
+                            // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: err.message, data: '', state: State.Failed})
                             res.end()
                         }
                         if(data){
@@ -114,11 +122,13 @@ const createDump= async(req: Request, res: Response)=>{
                             }
                             s3.upload(params, async function(s3Err: Error, aws: any){
                                 if(s3Err){
-                                    loggerFunction(baseUrl, s3Err.message, id, '', State.Failed)
+                                    loggerFunction(s3Err.message, State.Failed, id, baseUrl)
+                                    // loggerFunction(baseUrl, s3Err.message, id, '', State.Failed)
                                     res.end()
                                 }
                                 if(aws){
-                                    loggerFunction(baseUrl, "Backup completed", id, aws.Location, State.Success)
+                                    loggerFunction("Backup Completed", State.Success, aws.Location, id, baseUrl)
+                                    // loggerFunction(baseUrl, "Backup completed", id, aws.Location, State.Success)
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
                                         console.log('Removed Folders')
@@ -130,7 +140,8 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                     })
                 } catch (e) {
-                    loggerFunction(baseUrl, e.message, id, '', State.Failed)
+                    loggerFunction(e.message, State.Failed, id, baseUrl)
+                    // loggerFunction(baseUrl, e.message, id, '', State.Failed)
                     res.end()
                 }
     
