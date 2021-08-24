@@ -38,7 +38,6 @@ const createDump= async(req: Request, res: Response)=>{
     const {baseUrl, id, url}= req.body
     if(!id || !url){
         loggerFunction(baseUrl, "Empty Field", id, '', State.Failed)
-        // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Empty Field", data: '', state: State.Failed})
         res.end()
     }else{
         const child= spawn('mongodump', [
@@ -51,12 +50,10 @@ const createDump= async(req: Request, res: Response)=>{
             try {
                 console.log('stdout:', Buffer.from(data).toString())
                 loggerFunction(baseUrl, Buffer.from(data).toString(), id, '', State.Pending)
-                // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: Buffer.from(data).toString(), data: '', state: State.Pending})
                 res.end()
             } catch (error) {
                 loggerFunction(baseUrl, error.message, id, '', State.Failed)
                 res.end()
-                // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message:  error.message, data: '', state: State.Failed})
             }
         })
     
@@ -65,7 +62,6 @@ const createDump= async(req: Request, res: Response)=>{
                 try {
                     loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
-                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `Backup Failed with code: ${code}`, data: '', state: State.Failed})
                 } catch (error) {
                     loggerFunction(baseUrl, error.message, id, '', State.Failed)
                     res.end()
@@ -83,7 +79,6 @@ const createDump= async(req: Request, res: Response)=>{
             else{
                 try {
                     loggerFunction(baseUrl, "Backup SuccessFull", id, '', State.Success_Pending)
-                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: '', state: State.Success_Pending})
                     if(!fs.existsSync('restore')){
                         fs.mkdirSync('restore')
                     }
@@ -93,8 +88,8 @@ const createDump= async(req: Request, res: Response)=>{
                     }); 
         
                     archive.on('error', function(err: Error){
-                        res.send("failed smtg")
-                        // throw new BadRequestError('Failed to create Zip folder')
+                        loggerFunction(baseUrl, err.message, id, '', State.Failed)
+                        res.end()
                     });
                     
                     await archive.pipe(output);
@@ -120,12 +115,10 @@ const createDump= async(req: Request, res: Response)=>{
                             s3.upload(params, async function(s3Err: Error, aws: any){
                                 if(s3Err){
                                     loggerFunction(baseUrl, s3Err.message, id, '', State.Failed)
-                                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: `${s3Err.message}`, data: '', state: State.Failed})
                                     res.end()
                                 }
                                 if(aws){
                                     loggerFunction(baseUrl, "Backup completed", id, aws.Location, State.Success)
-                                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
                                         console.log('Removed Folders')
@@ -138,7 +131,6 @@ const createDump= async(req: Request, res: Response)=>{
                     })
                 } catch (e) {
                     loggerFunction(baseUrl, e.message, id, '', State.Failed)
-                    // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: e.message, data: '', state: State.Failed})
                     res.end()
                 }
     
