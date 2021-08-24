@@ -52,7 +52,6 @@ const createDump= async(req: Request, res: Response)=>{
         child.stderr.on('data', async(data)=>{
                 console.log('stdout:', Buffer.from(data).toString())
                 loggerFunction(Buffer.from(data).toString(), State.Pending, '', baseUrl, id)
-                console.log('hi')
                 res.end()
         })
     
