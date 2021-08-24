@@ -6,6 +6,8 @@ import archiver from 'archiver'
 import { v4 as uuidv4 } from 'uuid';
 import AWS from 'aws-sdk'
 import axios from 'axios'
+import urlExist from 'url-exist'
+
 import { loggerFunction } from '../../common/errors/loggerFunction'
 
 // import { ProcessfailedError } from '../../common/errors/process-failed-error'
@@ -29,7 +31,6 @@ const createDump= async(req: Request, res: Response)=>{
         secretAccessKey: process.env.AWS_S3_SECRET_KEY!,
         apiVersion: process.env.AWS_S3_API_VERSION!,
     });
-
     const s3= new AWS.S3()
 
     const {baseUrl, id, url}= req.body
@@ -54,7 +55,7 @@ const createDump= async(req: Request, res: Response)=>{
                 loggerFunction(Buffer.from(data).toString(), State.Pending, '', baseUrl, id)
                 res.end()
             } catch (error) {
-                console.log(error.message)
+                console.log('This', error.message)
                 res.end()
             }
         })
@@ -66,7 +67,7 @@ const createDump= async(req: Request, res: Response)=>{
                     // loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    console.log(error.message)
+                    console.log('This',error.message)
                     // loggerFunction(error.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
@@ -77,7 +78,7 @@ const createDump= async(req: Request, res: Response)=>{
                     // loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    console.log(error.message)
+                    console.log('This',error.message)
                     // loggerFunction(error.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
@@ -140,9 +141,9 @@ const createDump= async(req: Request, res: Response)=>{
                             })
                         }
                     })
-                } catch (e) {
-                    loggerFunction(e.message, State.Failed, '', baseUrl, id)
-                    // loggerFunction(baseUrl, e.message, id, '', State.Failed)
+                } catch (error) {
+                    console.log(error.message)
+                    // loggerFunction(e.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
     
