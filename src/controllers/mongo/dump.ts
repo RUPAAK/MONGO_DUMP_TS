@@ -32,7 +32,6 @@ const createDump= async(req: Request, res: Response)=>{
         apiVersion: process.env.AWS_S3_API_VERSION!,
     });
     const s3= new AWS.S3()
-    const exist= urlExistSync("https://google.com")
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
