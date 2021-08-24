@@ -16,7 +16,7 @@ export enum Restore_State{
 const createRestore= async(req: Request, res: Response)=>{
     const {baseUrl, url, database }= req.body
     if(!url || !database){
-        loggerFunction("Empty Field", Restore_State.Restore_Failed, baseUrl)
+        loggerFunction("Empty Field", Restore_State.Restore_Failed, '', baseUrl)
         res.end()
     }else{
         try {
@@ -37,19 +37,19 @@ const createRestore= async(req: Request, res: Response)=>{
         
             child.stderr.on('data', async(data)=>{
                 console.log('stdout:', Buffer.from(data).toString())
-                loggerFunction(Buffer.from(data).toString(), Restore_State.Restore_Pending, baseUrl)
+                loggerFunction(Buffer.from(data).toString(), Restore_State.Restore_Pending, '', baseUrl)
                 res.end()
                 // await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
             })
                 
             child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
                 if(code){
-                    loggerFunction(`Backup Failed with code: ${code}`, Restore_State.Restore_Failed, baseUrl)
+                    loggerFunction(`Backup Failed with code: ${code}`, Restore_State.Restore_Failed, '', baseUrl)
                     // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
                     res.end()
                 }
                 else if(signal){
-                    loggerFunction(`Backup Failed with signal: ${signal}`, Restore_State.Restore_Failed, baseUrl)
+                    loggerFunction(`Backup Failed with signal: ${signal}`, Restore_State.Restore_Failed, '', baseUrl)
                     // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
                     res.end()
                 }
@@ -59,13 +59,13 @@ const createRestore= async(req: Request, res: Response)=>{
                             console.log('Restore Successfull')
                         })
                     })
-                    loggerFunction("Restore Successfull", Restore_State.Restore_Success, baseUrl)
+                    loggerFunction("Restore Successfull", Restore_State.Restore_Success, '', baseUrl)
                     // await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
                     res.end()
                 }
             })
         } catch (error) {
-            loggerFunction("Restore Failed", Restore_State.Restore_Failed, baseUrl)
+            loggerFunction("Restore Failed", Restore_State.Restore_Failed, '', baseUrl)
             res.end()
         }
     }
