@@ -37,8 +37,13 @@ const createRestore= async(req: Request, res: Response)=>{
         
             child.stderr.on('data', async(data)=>{
                 console.log('stdout:', Buffer.from(data).toString())
-                loggerFunction(Buffer.from(data).toString(), Restore_State.Restore_Pending, '', baseUrl)
-                res.end()
+                try {
+                    loggerFunction(Buffer.from(data).toString(), Restore_State.Restore_Pending, '', baseUrl)
+                    res.end()
+                } catch (error) {
+                    console.log('Baseurl not found')
+                    res.end()
+                }
                 // await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
             })
                 
