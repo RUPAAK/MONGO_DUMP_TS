@@ -6,7 +6,7 @@ import archiver from 'archiver'
 import { v4 as uuidv4 } from 'uuid';
 import AWS from 'aws-sdk'
 import axios from 'axios'
-import urlExist from 'url-exist'
+import urlExistSync from "url-exist-sync"
 
 import { loggerFunction } from '../../common/errors/loggerFunction'
 
@@ -32,6 +32,7 @@ const createDump= async(req: Request, res: Response)=>{
         apiVersion: process.env.AWS_S3_API_VERSION!,
     });
     const s3= new AWS.S3()
+    const exist= urlExistSync("https://google.com")
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
@@ -50,38 +51,21 @@ const createDump= async(req: Request, res: Response)=>{
         ])
     
         child.stderr.on('data', async(data)=>{
-            try {
                 console.log('stdout:', Buffer.from(data).toString())
                 loggerFunction(Buffer.from(data).toString(), State.Pending, '', baseUrl, id)
                 res.end()
-            } catch (error) {
-                console.log('This', error.message)
-                res.end()
-            }
         })
     
         child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
             if(code){
-                try {
                     loggerFunction(`Backup Failed with code: ${code}`, State.Failed, '', baseUrl, id )
                     // loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
-                } catch (error) {
-                    console.log('This',error.message)
-                    // loggerFunction(error.message, State.Failed, '', baseUrl, id)
-                    res.end()
-                }
             }
             else if(signal){
-                try {
                     loggerFunction(`Backup Failed with signal: ${signal}`, State.Failed, '', baseUrl, id)
                     // loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
                     res.end()
-                } catch (error) {
-                    console.log('This',error.message)
-                    // loggerFunction(error.message, State.Failed, '', baseUrl, id)
-                    res.end()
-                }
             }
             else{
                 try {
@@ -142,8 +126,8 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                     })
                 } catch (error) {
-                    console.log(error.message)
-                    // loggerFunction(e.message, State.Failed, '', baseUrl, id)
+                    // console.log(error.message)
+                    loggerFunction(error.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
     

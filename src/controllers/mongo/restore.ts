@@ -36,35 +36,23 @@ const createRestore= async(req: Request, res: Response)=>{
         
             child.stderr.on('data', async(data)=>{
                 console.log('stdout:', Buffer.from(data).toString())
-                try {
                     loggerFunction(Buffer.from(data).toString(), Restore_State.Restore_Pending, '', baseUrl)
                     res.end()
-                } catch (error) {
-                    console.log('Baseurl not found')
-                    res.end()
-                }
                 // await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
             })
                 
             child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
                 if(code){
-                    try {
                         loggerFunction(`Backup Failed with code: ${code}`, Restore_State.Restore_Failed, '', baseUrl)
                         // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
                         res.end()
-                    } catch (error) {
-                        console.log(error.message)
-                        res.end()
-                    }
+
                 }
                 else if(signal){
-                    try {
                         loggerFunction(`Backup Failed with signal: ${signal}`, Restore_State.Restore_Failed, '', baseUrl)
                         // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
                         res.end()
-                    } catch (error) {
-                        res.end()
-                    }
+
                 }
                 else{
                     fs.rm('dump', {recursive: true}, ()=>{
