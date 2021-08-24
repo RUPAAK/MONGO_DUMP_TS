@@ -6,9 +6,9 @@ import archiver from 'archiver'
 import { v4 as uuidv4 } from 'uuid';
 import AWS from 'aws-sdk'
 import axios from 'axios'
+import { errorFunction } from '../../common/errors/errorFunction'
 
 
-import { BadRequestError } from '../../common'
 // import { ProcessfailedError } from '../../common/errors/process-failed-error'
 
 
@@ -37,7 +37,7 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
-        // console.log('hi')
+        // errorFunction(baseUrl, "Empty Field", id, '', State.Failed)
         await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Empty Field", data: '', state: State.Failed})
         res.end()
     }else{
@@ -88,7 +88,8 @@ const createDump= async(req: Request, res: Response)=>{
                     }); 
         
                     archive.on('error', function(err: Error){
-                        throw new BadRequestError('Failed to create Zip folder')
+                        res.send("failed smtg")
+                        // throw new BadRequestError('Failed to create Zip folder')
                     });
                     
                     await archive.pipe(output);
