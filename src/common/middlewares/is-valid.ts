@@ -1,46 +1,46 @@
-import axios from "axios";
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { State } from "../../controllers/mongo/dump";
+// import axios from "axios";
+// import { Request, Response, NextFunction } from "express";
+// import jwt from "jsonwebtoken";
+// import { State } from "../../controllers/mongo/dump";
 
 
-interface Valid {
-    isValid: boolean
-}
-
-// declare global {
-//   namespace Express {
-//     interface Request {
-//       currentUser?: UserPayload;
-//     }
-//   }
+// interface Valid {
+//     isValid: boolean
 // }
 
-export const isValid = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-    const {id, baseUrl}= req.body
-  if (!req.headers.authorization) {
-    return next();
-  }
+// // declare global {
+// //   namespace Express {
+// //     interface Request {
+// //       currentUser?: UserPayload;
+// //     }
+// //   }
+// // }
 
-  const jwtToken = req.headers.authorization.split(" ")[1];
+// export const isValid = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//     const {id, baseUrl}= req.body
+//   if (!req.headers.authorization) {
+//     return next();
+//   }
 
-  try {
-    const payload = jwt.decode(
-      jwtToken
-    ) as unknown as Valid;
+//   const jwtToken = req.headers.authorization.split(" ")[1];
 
-    if(payload.isValid){
-        next()
-    }else{
-        await axios.post(`${baseUrl}/logger`, {id, message: "Invalid", data: '', state: State.Failed})
-    }
-  } catch (err) {
-     await axios.post(`${baseUrl}/logger`, {id, message: "Invalid", data: '', state: State.Failed})
-    }
+//   try {
+//     const payload = jwt.decode(
+//       jwtToken
+//     ) as unknown as Valid;
 
-  next();
-};
+//     if(payload.isValid){
+//         next()
+//     }else{
+//         await axios.post(`${baseUrl}/logger`, {id, message: "Invalid", data: '', state: State.Failed})
+//     }
+//   } catch (err) {
+//      await axios.post(`${baseUrl}/logger`, {id, message: "Invalid", data: '', state: State.Failed})
+//     }
+
+//   next();
+// };
