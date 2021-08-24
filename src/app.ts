@@ -3,7 +3,7 @@ import "express-async-errors";
 import cors from 'cors'
 
 import { indexMongoRouter } from './routes/mongo'
-import { NotFoundError, errorHandler, BadRequestError } from './common';
+// import { NotFoundError, errorHandler, BadRequestError } from './common';
 
 const app: express.Application= express()
 
@@ -19,6 +19,6 @@ app.get('/api/v1/mongo/dump', (req, res)=>{
 })
 app.use('/api/v1/mongo', indexMongoRouter)
 
-app.use(errorHandler)
+// app.use(errorHandler)
 
 export {app}
