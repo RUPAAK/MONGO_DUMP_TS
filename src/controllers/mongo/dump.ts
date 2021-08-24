@@ -34,9 +34,13 @@ const createDump= async(req: Request, res: Response)=>{
 
     const {baseUrl, id, url}= req.body
     if(!id || !url){
-        loggerFunction("Empty Field", State.Failed, '', baseUrl, id)
-        // loggerFunction(baseUrl, "Empty Field", id, '', State.Failed)
-        res.end()
+        try {
+            loggerFunction("Empty Field", State.Failed, '', baseUrl, id)
+            res.end()
+        } catch (error) {
+            console.log(error.message)
+            res.end()
+        }
     }else{
         const child= spawn('mongodump', [
             '--gzip',
@@ -50,7 +54,7 @@ const createDump= async(req: Request, res: Response)=>{
                 loggerFunction(Buffer.from(data).toString(), State.Pending, '', baseUrl, id)
                 res.end()
             } catch (error) {
-                loggerFunction(error.message, State.Failed, '', baseUrl, id)
+                console.log(error.message)
                 res.end()
             }
         })
@@ -62,8 +66,8 @@ const createDump= async(req: Request, res: Response)=>{
                     // loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    loggerFunction(error.message, State.Failed, '', baseUrl, id)
-                    // loggerFunction(baseUrl, error.message, ?id, '', State.Failed)
+                    console.log(error.message)
+                    // loggerFunction(error.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
             }
@@ -73,8 +77,8 @@ const createDump= async(req: Request, res: Response)=>{
                     // loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
                     res.end()
                 } catch (error) {
-                    loggerFunction(error.message, State.Failed, '', baseUrl, id)
-                    // loggerFunction(baseUrl, error.message, id, '', State.Failed)
+                    console.log(error.message)
+                    // loggerFunction(error.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
             }

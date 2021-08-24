@@ -19,7 +19,6 @@ const createRestore= async(req: Request, res: Response)=>{
         loggerFunction("Empty Field", Restore_State.Restore_Failed, '', baseUrl)
         res.end()
     }else{
-        try {
             const response= await fetch(url)
             const bufferData: Buffer= await response.buffer()
         
@@ -49,14 +48,23 @@ const createRestore= async(req: Request, res: Response)=>{
                 
             child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
                 if(code){
-                    loggerFunction(`Backup Failed with code: ${code}`, Restore_State.Restore_Failed, '', baseUrl)
-                    // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
-                    res.end()
+                    try {
+                        loggerFunction(`Backup Failed with code: ${code}`, Restore_State.Restore_Failed, '', baseUrl)
+                        // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
+                        res.end()
+                    } catch (error) {
+                        console.log(error.message)
+                        res.end()
+                    }
                 }
                 else if(signal){
-                    loggerFunction(`Backup Failed with signal: ${signal}`, Restore_State.Restore_Failed, '', baseUrl)
-                    // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
-                    res.end()
+                    try {
+                        loggerFunction(`Backup Failed with signal: ${signal}`, Restore_State.Restore_Failed, '', baseUrl)
+                        // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
+                        res.end()
+                    } catch (error) {
+                        res.end()
+                    }
                 }
                 else{
                     fs.rm('dump', {recursive: true}, ()=>{
@@ -69,10 +77,6 @@ const createRestore= async(req: Request, res: Response)=>{
                     res.end()
                 }
             })
-        } catch (error) {
-            loggerFunction("Restore Failed", Restore_State.Restore_Failed, '', baseUrl)
-            res.end()
-        }
     }
 }
 
