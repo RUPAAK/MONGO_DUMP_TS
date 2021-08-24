@@ -124,7 +124,7 @@ const createDump= async(req: Request, res: Response)=>{
                                     res.end()
                                 }
                                 if(aws){
-                                    loggerFunction(baseUrl, "Backup completer. AWS link genereted", id, aws.location, State.Success)
+                                    loggerFunction(baseUrl, "Backup completed", id, aws.Location, State.Success)
                                     // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
