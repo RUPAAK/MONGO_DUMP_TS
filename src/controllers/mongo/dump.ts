@@ -64,6 +64,7 @@ const createDump= async(req: Request, res: Response)=>{
                     res.end()
                 } catch (error) {
                     await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: error.message, data: '', state: State.Failed})
+                    res.end()
                 }
             }
             else if(signal){
@@ -72,6 +73,7 @@ const createDump= async(req: Request, res: Response)=>{
                     res.end()
                 } catch (error) {
                     await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: error.message, data: '', state: State.Failed})
+                    res.end()
                 }
             }
             else{
@@ -118,6 +120,7 @@ const createDump= async(req: Request, res: Response)=>{
                                     await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: "Backup successfull", data: aws.Location, state: State.Success})
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
+                                        console.log('Removed Folders')
                                         res.end()
                                     })
                                 })
