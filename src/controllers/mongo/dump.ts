@@ -108,7 +108,7 @@ const createDump= async(req: Request, res: Response)=>{
                                     loggerFunction("Backup Completed", State.Success, aws.Location, baseUrl, id)
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
-                                        console.log('Removed Folders')
+                                        console.log('Process Ends')
                                         res.end()
                                     })
                                 })
