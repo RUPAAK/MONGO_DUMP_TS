@@ -19,6 +19,7 @@ const createRestore= async(req: Request, res: Response)=>{
         loggerFunction("Empty Field", Restore_State.Restore_Failed, '', baseUrl)
         res.end()
     }else{
+        try {
             const response= await fetch(url)
             const bufferData: Buffer= await response.buffer()
         
@@ -38,7 +39,6 @@ const createRestore= async(req: Request, res: Response)=>{
                 console.log('stdout:', Buffer.from(data).toString())
                     loggerFunction(Buffer.from(data).toString(), Restore_State.Restore_Pending, '', baseUrl)
                     res.end()
-                // await axios.post(`${baseUrl}/logger`, {message: Buffer.from(data).toString(), data: '', state:State.Restore_Pending})
             })
                 
             child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
@@ -65,6 +65,10 @@ const createRestore= async(req: Request, res: Response)=>{
                     res.end()
                 }
             })
+        } catch (error) {
+            loggerFunction("Restore Failed", Restore_State.Restore_Failed, '', baseUrl)
+            res.end()
+        }
     }
 }
 

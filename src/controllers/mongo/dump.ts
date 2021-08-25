@@ -58,18 +58,15 @@ const createDump= async(req: Request, res: Response)=>{
         child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
             if(code){
                     loggerFunction(`Backup Failed with code: ${code}`, State.Failed, '', baseUrl, id )
-                    // loggerFunction(baseUrl, `Backup Failed with code: ${code}`, id, '', State.Failed)
                     res.end()
             }
             else if(signal){
                     loggerFunction(`Backup Failed with signal: ${signal}`, State.Failed, '', baseUrl, id)
-                    // loggerFunction(baseUrl, `Backup Failed with signal: ${signal}`, id, '', State.Failed)
                     res.end()
             }
             else{
                 try {
                     loggerFunction("Backup SuccessFull", State.Success_Pending, '', baseUrl, id)
-                    // loggerFunction(baseUrl, "Backup SuccessFull", id, '', State.Success_Pending)
                     if(!fs.existsSync('restore')){
                         fs.mkdirSync('restore')
                     }
@@ -80,13 +77,11 @@ const createDump= async(req: Request, res: Response)=>{
         
                     archive.on('error', function(err: Error){
                         loggerFunction(err.message, State.Failed, '', baseUrl, id)
-                        // loggerFunction(baseUrl, err.message, id, '', State.Failed)
                         res.end()
                     });
                     
                     await archive.pipe(output);
                     
-                    // append files from a sub-directory, putting its contents at the root of archive
                     await archive.directory('./dump', false);
         
                     await archive.finalize()
@@ -95,7 +90,6 @@ const createDump= async(req: Request, res: Response)=>{
                     const zipFile= fs.readFile(zipPath, async(err: any, data: Buffer)=>{
                         if(err){
                             loggerFunction(err.message, State.Failed, '', baseUrl, id)
-                            // await axios.post(`${baseUrl}/api/v1/backups/logger`, {id, message: err.message, data: '', state: State.Failed})
                             res.end()
                         }
                         if(data){
@@ -108,12 +102,10 @@ const createDump= async(req: Request, res: Response)=>{
                             s3.upload(params, async function(s3Err: Error, aws: any){
                                 if(s3Err){
                                     loggerFunction(s3Err.message, State.Failed, '', baseUrl, id)
-                                    // loggerFunction(baseUrl, s3Err.message, id, '', State.Failed)
                                     res.end()
                                 }
                                 if(aws){
                                     loggerFunction("Backup Completed", State.Success, aws.Location, baseUrl, id)
-                                    // loggerFunction(baseUrl, "Backup completed", id, aws.Location, State.Success)
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
                                         console.log('Removed Folders')
@@ -125,7 +117,6 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                     })
                 } catch (error) {
-                    // console.log(error.message)
                     loggerFunction(error.message, State.Failed, '', baseUrl, id)
                     res.end()
                 }
