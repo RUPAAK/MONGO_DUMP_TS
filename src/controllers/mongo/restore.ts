@@ -57,7 +57,7 @@ const createRestore= async(req: Request, res: Response)=>{
                 else{
                     fs.rm('dump', {recursive: true}, ()=>{
                         fs.unlink('zipfile.zip', ()=>{
-                            console.log('Process Ends')
+                            console.log('Process End')
                         })
                     })
                     loggerFunction("Restore Successfull", Restore_State.Restore_Success, '', baseUrl)
