@@ -19,6 +19,7 @@ const createRestore= async(req: Request, res: Response)=>{
         loggerFunction("Empty Field", Restore_State.Restore_Failed, '', baseUrl)
         res.end()
     }else{
+        try {
             const response= await fetch(url)
             const bufferData: Buffer= await response.buffer()
         
@@ -64,6 +65,10 @@ const createRestore= async(req: Request, res: Response)=>{
                     res.end()
                 }
             })
+        } catch (error) {
+            loggerFunction('Restore Failed', Restore_State.Restore_Failed, '', baseUrl)
+            res.end()
+        }   
     }
 }
 
