@@ -14,13 +14,13 @@ export enum Restore_State{
 }
 
 const createRestore= async(req: Request, res: Response)=>{
-    const {baseUrl, url, database }= req.body
-    if(!url || !database){
+    const {baseUrl, awsLink, databaseUrl }= req.body
+    if(!awsLink || !databaseUrl){
         loggerFunction("Empty Field", Restore_State.Restore_Failed, '', baseUrl)
         res.end()
     }else{
         try {
-            const response= await fetch(url)
+            const response= await fetch(awsLink)
             const bufferData: Buffer= await response.buffer()
         
             fs.writeFile('zipfile.zip', bufferData, ()=>{
@@ -31,7 +31,7 @@ const createRestore= async(req: Request, res: Response)=>{
 
             const child= spawn('mongorestore', [
                 '--gzip',
-                '--uri', database,
+                '--uri', databaseUrl,
                 '--drop'
             ])
         

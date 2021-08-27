@@ -33,8 +33,8 @@ const createDump= async(req: Request, res: Response)=>{
     });
     const s3= new AWS.S3()
 
-    const {baseUrl, id, url}= req.body
-    if(!id || !url){
+    const {baseUrl, id, databaseUrl}= req.body
+    if(!id || !databaseUrl){
         try {
             loggerFunction("Empty Field", State.Failed, '', baseUrl, id)
             res.end()
@@ -45,7 +45,7 @@ const createDump= async(req: Request, res: Response)=>{
     }else{
         const child= spawn('mongodump', [
             '--gzip',
-            `--uri`, `${url}`,
+            `--uri`, databaseUrl,
             '--forceTableScan'
         ])
     
