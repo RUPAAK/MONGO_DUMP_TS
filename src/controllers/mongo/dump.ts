@@ -68,9 +68,10 @@ const createDump= async(req: Request, res: Response)=>{
                 try {
                     loggerFunction("Backup SuccessFull", Dump_State.Success_Pending, '', baseUrl, id)
                     if(!fs.existsSync('restore')){
-                        fs.rm('restore', {recursive: true}, ()=>{
-                            console.log('Restore folder Created')
-                        })
+                        fs.mkdirSync('restore')
+                        // fs.rm('restore', {recursive: true}, ()=>{
+                        //     console.log('Restore folder Created')
+                        // })
                     }
                     const output = await fs.createWriteStream('restore/dump.zip');
                     const archive = archiver('zip', {
