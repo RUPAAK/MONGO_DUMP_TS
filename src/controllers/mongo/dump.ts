@@ -17,7 +17,7 @@ interface Params{
     Key: string;
     Body: Buffer
 }
-export enum State{
+export enum Dump_State{
     Failed= "failed",
     Success= "success",
     Success_Pending= "success&pending",
@@ -36,7 +36,7 @@ const createDump= async(req: Request, res: Response)=>{
     const {baseUrl, id, databaseUrl}= req.body
     if(!id || !databaseUrl){
         try {
-            loggerFunction("Empty Field", State.Failed, '', baseUrl, id)
+            loggerFunction("Empty Field", Dump_State.Failed, '', baseUrl, id)
             res.end()
         } catch (error) {
             console.log(error.message)
@@ -51,22 +51,22 @@ const createDump= async(req: Request, res: Response)=>{
     
         child.stderr.on('data', async(data)=>{
                 console.log('stdout:', Buffer.from(data).toString())
-                loggerFunction(Buffer.from(data).toString(), State.Pending, '', baseUrl, id)
+                loggerFunction(Buffer.from(data).toString(), Dump_State.Pending, '', baseUrl, id)
                 res.end()
         })
     
         child.on('exit', async(code: number, signal:  NodeJS.Signals)=>{
             if(code){
-                    loggerFunction(`Backup Failed with code: ${code}`, State.Failed, '', baseUrl, id )
+                    loggerFunction(`Backup Failed with code: ${code}`, Dump_State.Failed, '', baseUrl, id )
                     res.end()
             }
             else if(signal){
-                    loggerFunction(`Backup Failed with signal: ${signal}`, State.Failed, '', baseUrl, id)
+                    loggerFunction(`Backup Failed with signal: ${signal}`, Dump_State.Failed, '', baseUrl, id)
                     res.end()
             }
             else{
                 try {
-                    loggerFunction("Backup SuccessFull", State.Success_Pending, '', baseUrl, id)
+                    loggerFunction("Backup SuccessFull", Dump_State.Success_Pending, '', baseUrl, id)
                     if(!fs.existsSync('restore')){
                         fs.mkdirSync('restore')
                     }
@@ -76,7 +76,7 @@ const createDump= async(req: Request, res: Response)=>{
                     }); 
         
                     archive.on('error', function(err: Error){
-                        loggerFunction(err.message, State.Failed, '', baseUrl, id)
+                        loggerFunction(err.message, Dump_State.Failed, '', baseUrl, id)
                         res.end()
                     });
                     
@@ -89,7 +89,7 @@ const createDump= async(req: Request, res: Response)=>{
                     const zipPath= path.resolve('./restore/dump.zip')
                     const zipFile= fs.readFile(zipPath, async(err: any, data: Buffer)=>{
                         if(err){
-                            loggerFunction(err.message, State.Failed, '', baseUrl, id)
+                            loggerFunction(err.message, Dump_State.Failed, '', baseUrl, id)
                             res.end()
                         }
                         if(data){
@@ -101,11 +101,11 @@ const createDump= async(req: Request, res: Response)=>{
                             }
                             s3.upload(params, async function(s3Err: Error, aws: any){
                                 if(s3Err){
-                                    loggerFunction(s3Err.message, State.Failed, '', baseUrl, id)
+                                    loggerFunction(s3Err.message, Dump_State.Failed, '', baseUrl, id)
                                     res.end()
                                 }
                                 if(aws){
-                                    loggerFunction("Backup Completed", State.Success, aws.Location, baseUrl, id)
+                                    loggerFunction("Backup Completed", Dump_State.Success, aws.Location, baseUrl, id)
                                 fs.rm('dump', {recursive: true}, ()=>{
                                     fs.rm('restore', {recursive: true}, ()=>{
                                         console.log('Process Ends')
@@ -117,7 +117,7 @@ const createDump= async(req: Request, res: Response)=>{
                         }
                     })
                 } catch (error) {
-                    loggerFunction(error.message, State.Failed, '', baseUrl, id)
+                    loggerFunction(error.message, Dump_State.Failed, '', baseUrl, id)
                     res.end()
                 }
     
