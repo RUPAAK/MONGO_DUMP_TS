@@ -20,16 +20,19 @@ const createRestore= async(req: Request, res: Response)=>{
         res.end()
     }else{
         try {
-            const response= fetch(awsLink).then(()=> console.log('Fetching link')).catch((e)=> console.log(e.message))
-
+            const response= await fetch(awsLink)
             const bufferData: Buffer= await response.buffer()
-        
+
             fs.writeFile('zipfile.zip', bufferData, ()=>{
                 fs.mkdir('dump', async()=>{
-                    await extract('zipfile.zip', {dir: path.resolve('dump')})
+                    try {
+                        await extract('zipfile.zip', {dir: path.resolve('dump')})                        
+                    } catch (error) {
+                        loggerFunction("Aws link failed", Restore_State.Restore_Failed, '', baseUrl)
+                        res.end()
+                    }
                 })
             })
-
             const child= spawn('mongorestore', [
                 '--gzip',
                 '--uri', databaseUrl,
@@ -45,13 +48,11 @@ const createRestore= async(req: Request, res: Response)=>{
             child.on('exit', async(code: number, signal: NodeJS.Signals)=>{
                 if(code){
                         loggerFunction(`Backup Failed with code: ${code}`, Restore_State.Restore_Failed, '', baseUrl)
-                        // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${code}`, data: '', state: State.Restore_Failed })
                         res.end()
 
                 }
                 else if(signal){
                         loggerFunction(`Backup Failed with signal: ${signal}`, Restore_State.Restore_Failed, '', baseUrl)
-                        // await axios.post(`${baseUrl}/logger`, {message: `Process end: ${signal}`, data: '', state: State.Restore_Failed})
                         res.end()
 
                 }
@@ -62,14 +63,14 @@ const createRestore= async(req: Request, res: Response)=>{
                         })
                     })
                     loggerFunction("Restore Successfull", Restore_State.Restore_Success, '', baseUrl)
-                    // await axios.post(`${baseUrl}/logger`, {message: "Restore successfull", data: '', state: State.Restore_Success})
                     res.end()
                 }
-            })
+                
+            })  
         } catch (error) {
             loggerFunction('Restore Failed', Restore_State.Restore_Failed, '', baseUrl)
             res.end()
-        }   
+        } 
     }
 }
 
