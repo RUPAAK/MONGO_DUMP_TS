@@ -20,7 +20,8 @@ const createRestore= async(req: Request, res: Response)=>{
         res.end()
     }else{
         try {
-            const response= await fetch(awsLink)
+            const response= fetch(awsLink).then(()=> console.log('Fetching link')).catch((e)=> console.log(e.message))
+
             const bufferData: Buffer= await response.buffer()
         
             fs.writeFile('zipfile.zip', bufferData, ()=>{
