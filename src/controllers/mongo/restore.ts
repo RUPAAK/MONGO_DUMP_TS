@@ -5,7 +5,7 @@ import path from 'path'
 import fetch from 'node-fetch'
 import extract from 'extract-zip'
 import axios from 'axios'
-import { loggerFunction } from '../../common/errors/loggerFunction'
+import { loggerFunction } from '../../common/middlewares/loggerFunction'
 
 export enum Restore_State{
     Restore_Pending= "restore&pending",

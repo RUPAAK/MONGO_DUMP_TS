@@ -1,46 +1,44 @@
-// import axios from "axios";
-// import { Request, Response, NextFunction } from "express";
-// import jwt from "jsonwebtoken";
-// import { State } from "../../controllers/mongo/dump";
+import axios from "axios";
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { Dump_State } from "../../controllers/mongo/dump";
+import { loggerFunction } from "./loggerFunction";
 
+interface Valid {
+  isValid: boolean;
+}
 
-// interface Valid {
-//     isValid: boolean
-// }
+export const isValid = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id, baseUrl } = req.body;
 
-// // declare global {
-// //   namespace Express {
-// //     interface Request {
-// //       currentUser?: UserPayload;
-// //     }
-// //   }
-// // }
+  if (!req.headers.authorization) {
+    loggerFunction("Access Token Must be provided", Dump_State.Failed, "", baseUrl, id);
+    res.end();
+  } else {
+    try {
+      const jwtToken = req.headers.authorization!.split(" ")[1];
 
-// export const isValid = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//     const {id, baseUrl}= req.body
-//   if (!req.headers.authorization) {
-//     return next();
-//   }
-
-//   const jwtToken = req.headers.authorization.split(" ")[1];
-
-//   try {
-//     const payload = jwt.decode(
-//       jwtToken
-//     ) as unknown as Valid;
-
-//     if(payload.isValid){
-//         next()
-//     }else{
-//         await axios.post(`${baseUrl}/logger`, {id, message: "Invalid", data: '', state: State.Failed})
-//     }
-//   } catch (err) {
-//      await axios.post(`${baseUrl}/logger`, {id, message: "Invalid", data: '', state: State.Failed})
-//     }
-
-//   next();
-// };
+      const payload= jwt.verify(jwtToken, process.env.JWT_SECRET_TOKEN!, (err, decoded)=>{
+        if(err){
+          loggerFunction("Invalid Access Token", Dump_State.Failed, "", baseUrl, id)
+          res.end()
+        }
+        if(decoded){
+          next()
+          // if(decoded.baseUrl){
+          //   next()
+          // }else{
+          //   loggerFunction("Not Authorized", Dump_State.Failed, "", baseUrl, id);
+          // }
+        }
+      })
+      // const payload = jwt.decode(jwtToken) as unknown as Valid;
+    } catch (err) {
+      loggerFunction("Something in authorization gone phooss..", Dump_State.Failed, "", baseUrl, id);
+    }
+  }
+};

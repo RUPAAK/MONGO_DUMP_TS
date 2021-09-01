@@ -8,9 +8,7 @@ import AWS from 'aws-sdk'
 import axios from 'axios'
 import urlExistSync from "url-exist-sync"
 
-import { loggerFunction } from '../../common/errors/loggerFunction'
-
-// import { ProcessfailedError } from '../../common/errors/process-failed-error'
+import { loggerFunction } from '../../common/middlewares/loggerFunction'
 
 interface Params{
     Bucket: string;
